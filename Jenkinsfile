@@ -57,7 +57,8 @@ pipeline {
                         sh 'git branch'
                         sh 'git config --list'
 
-                        sh "git remote set-url origin https://${USER}:${PASS}@gitlab.com/devopsbcp/java-maven-multi-branch-8-11.git"
+                        sh 'git remote set-url origin https://$USER:$PASS@gitlab.com/devopsbcp/java-maven-multi-branch-8-11.git'
+
                         sh 'git add .'
                         sh 'git commit -m "ci: version bump" || echo "No changes to commit"'
                         sh 'git push origin HEAD:jenkins-jobs'
