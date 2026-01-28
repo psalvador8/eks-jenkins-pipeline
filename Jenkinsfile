@@ -1,5 +1,5 @@
 #!/usr/bin/env groovy
-@library('jenkins-shared-library@main')
+@Library('jenkins-shared-library@main')
 
 def gv
 
