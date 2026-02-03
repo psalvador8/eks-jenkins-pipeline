@@ -1,8 +1,12 @@
-
 pipeline {
     agent any
     tools {
         maven 'maven-3.9'
+    }
+    environment {
+        AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
+        AWS_SECRET_ACCESS_KEY = credentials('jenkins-aws_secret_access_key')
+        APP_NAME = 'java-maven-app'
     }
     stages {
         stage('increment version') {
@@ -38,62 +42,28 @@ pipeline {
                 }
             }
         }
-        #!/usr/bin/env groovy
-
-pipeline {
-    agent any
-    stages {
-        stage('build app') {
-            steps {
-               script {
-                   echo "building the application..."
-               }
-            }
-        }
-        stage('build image') {
-            steps {
-                script {
-                    echo "building the docker image..."
-                }
-            }
-        }
         stage('deploy') {
-            environment {
-                AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
-                AWS_SECRET_ACCESS_KEY = credentials('jenkins-aws_secret_access_key')
-                APP_NAME = 'java-maven-app'
-            }
             steps {
                 script {
-                   echo 'deploying docker image...'
-                   sh 'envsubst < kubernetes/deployment.yaml | kubectl apply -f -'
-                   sh 'envsubst < kubernetes/service.yaml | kubectl apply -f -'
-
+                    echo 'deploying docker image...'
+                    sh 'envsubst < kubernetes/deployment.yaml | kubectl apply -f -'
+                    sh 'envsubst < kubernetes/service.yaml | kubectl apply -f -'
                 }
             }
         }
-    }
-}
         stage('commit version update'){
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'gitlab-credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]){
                         sh 'git config --global user.email "jenkins@example.com"'
                         sh 'git config --global user.name "jenkins"'
-
-                        sh 'git status'
-                        sh 'git branch'
-                        sh 'git config --list'
-
                         sh 'git remote set-url origin https://$USER:$PASS@gitlab.com/devopsbcp/java-maven-multi-branch-8-11.git'
-
                         sh 'git add .'
                         sh 'git commit -m "ci: version bump [ci skip]"'
                         sh 'git push origin HEAD:jenkins-jobs'
                     }
                 }
             }
-         
         }
     }
 }
