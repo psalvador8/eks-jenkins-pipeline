@@ -1,36 +1,17 @@
 pipeline {   
     agent any
     stages {
-        stage("test") {
+        stage("copy files to ansible server") {
             steps {
                 script{
-                    echo "Testing teh application...."
-                    echo "Executing pipiline for branch $BRANCH_NAME"
-                }
-            }
-        }
-        stage("build") {
-            when {
-                expression {
-                  BRANCH_NAME == "main" 
-                }
-            }
-            steps {
-                script{
-                    echo "Building the application"
+                    echo "copy all neccessarry files to ansible conrol node"
+                    sshagent(['ansible-server-key']) {
+                       sh "scp -o StrictHostKeyChecking=no ansible/* root@138.68.74.61:/root"
 
-                }
-            }
-        }
-        stage("deploy") {
-            when {
-                expression {
-                  BRANCH_NAME == "main" 
-                }
-            }
-            steps {
-                script{
-                    echo "Deploying the application"
+                       withCredentials([sshUserPrivateKey(credentialsId: 'ec2-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
+                        sh 'scp $keyfile root@138.68.74.61:/root/ssh-key.pem'
+                       }
+                    }
                 }
             }
         }               
