@@ -115,6 +115,12 @@ No secrets are stored in source code.
 
 ---
 
+## 📖 Related Article
+
+A complete explanation of the CI/CD pipeline design, versioning strategy, and deployment workflow is available on [Medium](https://medium.com/@psalvador8/from-manual-deployments-to-automated-delivery-on-aws-22306147f43a).
+
+---
+
 ## 👤 Author
 
 **Priscilla Salvador**  
