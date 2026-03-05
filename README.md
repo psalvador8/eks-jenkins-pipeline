@@ -1,127 +1,281 @@
 # 🚀 CI/CD Pipeline: Jenkins → AWS ECR → AWS EKS
 
-## 📌 Overview
-This project implements a complete **CI/CD pipeline** for a containerized Java application using Jenkins.
+This project implements a **production-style CI/CD pipeline** that automates the build, containerization, and deployment of a Java application to **Amazon EKS**.
 
-On each pipeline run, the system automatically:
+The pipeline uses **Jenkins Pipeline as Code** to orchestrate the full delivery workflow, including versioning, Docker image creation, container registry management, and Kubernetes deployment.
 
-- 🔢 increments the Maven application version  
-- 🏗 builds the Java artifact  
-- 🐳 builds & tags a Docker image  
-- 📦 pushes the image to **AWS ECR**  
-- ☸️ deploys the new version to **AWS EKS**  
-- 🔁 commits the updated version back to Git  
+📖 **Architecture Deep Dive (Medium Article):**  
+[From Manual Deployments to Automated Delivery on AWS](https://medium.com/@psalvador8/from-manual-deployments-to-automated-delivery-on-aws-22306147f43a)
 
 ---
 
-## 🧰 Technologies Used
-- Jenkins (Pipeline as Code)  
-- Docker  
-- Kubernetes  
-- AWS EKS (Elastic Kubernetes Service)  
-- AWS ECR (Elastic Container Registry)  
-- Java & Maven  
-- Git  
-- Linux  
+# 📌 Project Overview
+
+Modern cloud applications rely on automated pipelines to ensure reliable and repeatable software delivery.
+
+This project demonstrates how to build a **complete CI/CD workflow** that automatically:
+
+- increments the application version
+- builds the Java artifact
+- creates and tags a Docker container image
+- pushes the image to **Amazon ECR**
+- deploys the application to **Amazon EKS**
+- commits version updates back to Git
+
+The pipeline models a **real-world DevOps workflow** where code changes automatically progress through build, containerization, and deployment stages.
 
 ---
 
-## 🔄 Pipeline Stages
+# 🧭 Architecture
 
-### 1️⃣ Version Increment (CI)
-Automatically increments the patch version in `pom.xml` using Maven version plugins.
+![Architecture Diagram](docs/architecture.png)
 
-**Example:**  
-`1.1.21 → 1.1.22`
+### Pipeline Flow
 
-The updated version is committed back to the repository.
+```
+Developer Push
+      ↓
+Git Repository
+      ↓
+Jenkins Pipeline
+      ↓
+Build Java Application (Maven)
+      ↓
+Build Docker Image
+      ↓
+Push Image to AWS ECR
+      ↓
+Deploy to AWS EKS
+      ↓
+Kubernetes Pods Updated
+```
 
----
+When code changes are pushed to the repository, Jenkins automatically triggers the pipeline, initiating the CI/CD workflow that builds, containerizes, and deploys the application.
 
-### 2️⃣ Build Application (CI)
+The pipeline builds the application, creates a Docker image, pushes the image to **Amazon ECR**, and deploys the updated version to **Amazon EKS**.
 
-`mvn clean package`
-
-Builds the executable Java application artifact.
-
----
-
-### 3️⃣ Build & Push Docker Image (CI)
-
-Pipeline performs:
-
-- Docker image build  
-- Dynamic tagging using `<version>-<build_number>`  
-- Secure login to AWS ECR using Jenkins credentials  
-- Push to private ECR repository  
-
-**Example tag:**  
-`1.1.22-15`
+Kubernetes then performs a rolling update of the running pods.
 
 ---
 
-### 4️⃣ Deploy to AWS EKS (CD)
+# 🧰 Technologies Used
 
-Deployment uses environment variable substitution:
-
-`envsubst < kubernetes/deployment.yaml | kubectl apply -f -`
-
-This dynamically injects the new image version into Kubernetes manifests and deploys to the EKS cluster.
-
----
-
-### 5️⃣ Commit Version Update (CD)
-
-After successful deployment:
-
-- Jenkins commits the updated `pom.xml`  
-- Pushes changes to the `jenkins-jobs` branch  
-- Uses `[ci skip]` to prevent recursive pipeline triggers  
+- Jenkins (Pipeline as Code)
+- Docker
+- Kubernetes
+- AWS EKS (Elastic Kubernetes Service)
+- AWS ECR (Elastic Container Registry)
+- Java
+- Maven
+- Git
+- Linux
 
 ---
 
-## 🔐 Credential Management
+# ⚙️ Deployment Strategy
 
-Sensitive credentials are securely stored in the **Jenkins Credentials Store**:
+The pipeline automates the full application lifecycle from source code to production deployment.
 
-- AWS Access Key & Secret  
-- ECR login credentials  
-- Git repository credentials  
+The process includes:
 
-No secrets are stored in source code.
+1. Application build using Maven  
+2. Docker container image creation  
+3. Secure push to AWS ECR  
+4. Deployment to Kubernetes workloads running on Amazon EKS  
 
----
-
-## 🎯 What This Project Demonstrates
-
-- Automated semantic versioning  
-- End-to-end CI/CD automation  
-- Docker image lifecycle management  
-- Secure credential handling  
-- Kubernetes deployment automation  
-- Immutable image tagging strategy  
-- Git-based version tracking  
-- Real-world DevOps deployment workflow  
+Kubernetes handles the rolling update of application pods, ensuring minimal downtime during deployment.
 
 ---
 
-## 🔮 Potential Improvements
+# 🚀 Pipeline Stages
 
-- Add Helm chart templating  
-- Implement automated testing stage  
-- Add container security scanning (Trivy)  
-- Integrate monitoring (Prometheus & Grafana)  
-- Add Ingress & TLS for external access  
+## 1️⃣ Version Increment (CI)
+
+The pipeline automatically increments the patch version of the application using Maven version plugins.
+
+Example:
+
+```
+1.1.21 → 1.1.22
+```
+
+This ensures each build produces a uniquely versioned artifact.
 
 ---
 
-## 📖 Related Article
+## 2️⃣ Build Application (CI)
 
-A complete explanation of the CI/CD pipeline design, versioning strategy, and deployment workflow is available on [Medium](https://medium.com/@psalvador8/from-manual-deployments-to-automated-delivery-on-aws-22306147f43a).
+```
+mvn clean package
+```
+
+This stage compiles the application and produces the executable Java artifact.
 
 ---
 
-## 👤 Author
+## 3️⃣ Build & Push Docker Image (CI)
+
+The pipeline then:
+
+- builds a Docker image
+- dynamically tags the image using the application version and build number
+- authenticates with AWS ECR
+- pushes the container image to the registry
+
+Example image tag:
+
+```
+1.1.22-15
+```
+
+Using immutable version tags ensures reliable deployment rollbacks if needed.
+
+---
+
+## 4️⃣ Deploy to AWS EKS (CD)
+
+Deployment is performed using Kubernetes manifests.
+
+The pipeline dynamically injects the new container version into the deployment manifest:
+
+```
+envsubst < kubernetes/deployment.yaml | kubectl apply -f -
+```
+
+This updates the Kubernetes deployment with the latest container image.
+
+---
+
+## 5️⃣ Commit Version Update (CD)
+
+After a successful deployment:
+
+- Jenkins commits the updated `pom.xml`
+- pushes changes to the `jenkins-jobs` branch
+- uses `[ci skip]` to prevent recursive pipeline triggers
+
+This ensures the repository always reflects the currently deployed application version.
+
+---
+
+# 🔐 Credential Management
+
+Sensitive credentials are securely stored in the **Jenkins Credentials Store**, including:
+
+- AWS Access Key & Secret
+- ECR authentication credentials
+- Git repository credentials
+
+Secrets are injected into the pipeline at runtime and are **never stored directly in the repository**.
+
+---
+
+# 🛟 Reliability & Scalability
+
+The system benefits from the scalability of both containerized workloads and managed Kubernetes infrastructure.
+
+Key reliability mechanisms include:
+
+- containerized application deployment
+- rolling updates managed by Kubernetes
+- versioned container images
+- automated build and deployment pipeline
+- separation of build and runtime environments
+
+This architecture supports scalable and repeatable deployments.
+
+---
+
+# 🧠 Design Decisions
+
+Several architectural decisions were made to reflect real-world CI/CD practices.
+
+- **Jenkins Pipeline as Code** ensures reproducible pipeline configuration
+- **Docker containers** provide environment consistency across deployments
+- **Amazon ECR** stores versioned container images securely
+- **Amazon EKS** manages container orchestration and scaling
+- **Immutable image tagging** improves traceability and rollback capabilities
+- **Automated versioning** ensures consistent artifact management
+
+These design decisions help model a realistic **DevOps delivery pipeline**.
+
+---
+
+# 🏗️ System Design Principles
+
+This project demonstrates several core DevOps and cloud engineering principles.
+
+### Automation
+
+The entire build and deployment lifecycle is automated through Jenkins pipelines.
+
+### Immutable Infrastructure
+
+Container images are versioned and redeployed rather than modified in place.
+
+### Continuous Delivery
+
+New application versions can be deployed automatically through the pipeline.
+
+### Scalability
+
+Kubernetes automatically manages application scaling and rolling updates.
+
+### Reproducibility
+
+Infrastructure and pipeline configuration are defined as code.
+
+---
+
+# 🎯 What This Project Demonstrates
+
+- CI/CD pipeline design using Jenkins
+- Container image lifecycle management
+- Kubernetes deployment automation
+- AWS ECR container registry integration
+- Automated versioning workflows
+- Secure credential management
+- End-to-end DevOps delivery pipeline
+
+---
+
+# 🚀 Potential Improvements
+
+Future enhancements could include:
+
+- Helm-based Kubernetes deployments
+- automated unit and integration testing stages
+- container security scanning (Trivy or Clair)
+- monitoring with Prometheus & Grafana
+- GitOps-style deployments using ArgoCD
+- automated rollback strategies
+
+---
+
+# 📁 Repository Structure
+
+```
+├── README.md
+├── Jenkinsfile
+├── kubernetes/
+│   └── deployment.yaml
+├── docker/
+│   └── Dockerfile
+└── docs/
+    └── architecture.png
+```
+
+---
+
+# 💡 Key Takeaway
+
+This project demonstrates how CI/CD pipelines can automate the full software delivery lifecycle.
+
+By integrating Jenkins, Docker, Kubernetes, and AWS services, the pipeline enables consistent, repeatable deployments of containerized applications to cloud infrastructure.
+
+---
+
+# 👤 Author
 
 **Priscilla Salvador**  
 Cloud & DevOps Engineer
