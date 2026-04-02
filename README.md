@@ -1,6 +1,10 @@
 # 🚀 CI/CD Pipeline: Jenkins → AWS ECR → AWS EKS
 
-This project implements a **production-style CI/CD pipeline** that automates the build, containerization, and deployment of a Java application to **Amazon EKS**.
+End-to-end CI/CD automation pipeline designed to simulate real-world DevOps workflows on AWS.
+
+This project implements a production-style CI/CD pipeline that automates application delivery to Kubernetes on AWS.
+
+It eliminates manual deployment steps and ensures consistent, repeatable releases by integrating build automation, containerization, and Kubernetes deployment into a single automated workflow.
 
 The pipeline uses **Jenkins Pipeline as Code** to orchestrate the full delivery workflow, including versioning, Docker image creation, container registry management, and Kubernetes deployment.
 
@@ -25,6 +29,15 @@ This project demonstrates how to build a **complete CI/CD workflow** that automa
 The pipeline models a **real-world DevOps workflow** where code changes automatically progress through build, containerization, and deployment stages.
 
 ---
+
+## 📈 Impact
+
+- Eliminates manual build and deployment processes
+- Ensures consistent and repeatable application releases
+- Reduces risk of deployment errors through automation
+- Demonstrates real-world CI/CD workflow used in cloud environments
+
+---  
 
 # 🧭 Architecture
 
@@ -184,11 +197,18 @@ Key reliability mechanisms include:
 
 This architecture supports scalable and repeatable deployments.
 
+## 🔁 Deployment Reliability
+
+- Kubernetes rolling updates ensure zero-downtime deployments
+- Versioned container images allow rollback to previous stable versions
+- Immutable image tags prevent unintended overwrites
+- Rolling updates combined with health checks ensure only healthy pods receive traffic
+
 ---
 
 # 🧠 Design Decisions
 
-Several architectural decisions were made to reflect real-world CI/CD practices.
+This pipeline was designed to reflect real-world DevOps workflows, focusing on automation, traceability, and reliable application delivery.
 
 - **Jenkins Pipeline as Code** ensures reproducible pipeline configuration
 - **Docker containers** provide environment consistency across deployments
